@@ -7,7 +7,7 @@ defmodule Scrivener.HTMLTest do
   alias Scrivener.Page
 
   setup do
-    Application.put_env(:scrivener_html, :view_style, :bootstrap)
+    Application.put_env(:scrivener_html, :view_style, :bootstrap_v5)
     Application.put_env(:scrivener_html, :routes_helper, MyApp.Router.Helpers)
     :ok
   end
@@ -211,13 +211,13 @@ defmodule Scrivener.HTMLTest do
 
   describe "pagination_links" do
     setup do
-      Application.put_env(:scrivener_html, :view_style, :bootstrap)
+      Application.put_env(:scrivener_html, :view_style, :bootstrap_v5)
     end
 
     test "accepts a paginator and options (same as defaults)" do
       assert {:safe, _html} =
                HTML.pagination_links(%Page{total_pages: 10, page_number: 5},
-                 view_style: :bootstrap,
+                 view_style: :bootstrap_v5,
                  path: &MyApp.Router.Helpers.post_path/3
                )
     end
@@ -230,7 +230,7 @@ defmodule Scrivener.HTMLTest do
       Application.put_env(:scrivener_html, :view_style, :another_style)
 
       assert_raise RuntimeError,
-                   "Scrivener.HTML: View style :another_style is not a valid view style. Please use one of [:bootstrap, :semantic, :foundation, :bootstrap_v4, :materialize, :bulma]",
+                   "Scrivener.HTML: View style :another_style is not a valid view style. Please use one of [:bootstrap, :semantic, :foundation, :bootstrap_v4, :bootstrap_v5, :materialize, :bulma]",
                    fn ->
                      HTML.pagination_links(%Page{total_pages: 10, page_number: 5})
                    end
@@ -239,7 +239,7 @@ defmodule Scrivener.HTMLTest do
     test "allows options in any order" do
       assert {:safe, _html} =
                HTML.pagination_links(%Page{total_pages: 10, page_number: 5},
-                 view_style: :bootstrap,
+                 view_style: :bootstrap_v5,
                  path: &MyApp.Router.Helpers.post_path/3
                )
     end
@@ -253,7 +253,7 @@ defmodule Scrivener.HTMLTest do
     test "accepts an override action" do
       html =
         HTML.pagination_links(%Page{total_pages: 10, page_number: 5},
-          view_style: :bootstrap,
+          view_style: :bootstrap_v5,
           action: :edit,
           path: &MyApp.Router.Helpers.post_path/3
         )
@@ -318,8 +318,10 @@ defmodule Scrivener.HTMLTest do
 
   describe "Phoenix conn()" do
     test "handles no entries" do
-      use Phoenix.ConnTest
-      Application.put_env(:scrivener_html, :view_style, :bootstrap)
+      import Plug.Conn
+      import Phoenix.ConnTest
+
+      Application.put_env(:scrivener_html, :view_style, :bootstrap_v5)
       Application.put_env(:scrivener_html, :routes_helper, MyApp.Router.Helpers)
 
       assert {:safe,
@@ -366,8 +368,10 @@ defmodule Scrivener.HTMLTest do
     end
 
     test "allows other url parameters" do
-      use Phoenix.ConnTest
-      Application.put_env(:scrivener_html, :view_style, :bootstrap)
+      # import Plug.Conn
+      import Phoenix.ConnTest
+
+      Application.put_env(:scrivener_html, :view_style, :bootstrap_v5)
       Application.put_env(:scrivener_html, :routes_helper, MyApp.Router.Helpers)
 
       assert HTML.pagination_links(
@@ -387,7 +391,8 @@ defmodule Scrivener.HTMLTest do
   end
 
   describe "View Styles" do
-    use Phoenix.ConnTest
+    import Plug.Conn
+    import Phoenix.ConnTest
 
     test "renders Semantic UI styling" do
       assert {:safe,
@@ -720,6 +725,64 @@ defmodule Scrivener.HTMLTest do
                    total_pages: 0
                  },
                  view_style: :bootstrap_v4
+               )
+    end
+
+    test "renders bootstrap v5 styling" do
+      assert {:safe,
+              [
+                60,
+                "nav",
+                [[32, "aria-label", 61, 34, "Page navigation", 34]],
+                62,
+                [
+                  60,
+                  "ul",
+                  [[32, "class", 61, 34, "pagination", 34]],
+                  62,
+                  [
+                    [
+                      60,
+                      "li",
+                      [[32, "class", 61, 34, "active page-item", 34]],
+                      62,
+                      [
+                        60,
+                        "a",
+                        [[32, "class", 61, 34, "page-link", 34]],
+                        62,
+                        "1",
+                        60,
+                        47,
+                        "a",
+                        62
+                      ],
+                      60,
+                      47,
+                      "li",
+                      62
+                    ]
+                  ],
+                  60,
+                  47,
+                  "ul",
+                  62
+                ],
+                60,
+                47,
+                "nav",
+                62
+              ]} =
+               HTML.pagination_links(
+                 build_conn(),
+                 %Page{
+                   entries: [],
+                   page_number: 1,
+                   page_size: 10,
+                   total_entries: 0,
+                   total_pages: 0
+                 },
+                 view_style: :bootstrap_v5
                )
     end
 

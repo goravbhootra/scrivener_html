@@ -1,15 +1,15 @@
 defmodule ScrivenerHtml.Mixfile do
   use Mix.Project
 
-  @version "1.8.1"
+  @version "2.0.0"
   def project do
     [
       app: :scrivener_html,
       version: @version,
-      elixir: "~> 1.2",
+      elixir: "~> 1.6",
       name: "scrivener_html",
-      source_url: "https://github.com/mgwidmann/scrivener_html",
-      homepage_url: "https://github.com/mgwidmann/scrivener_html",
+      source_url: "https://github.com/goravbhootra/scrivener_html",
+      homepage_url: "https://github.com/goravbhootra/scrivener_html",
       elixirc_paths: elixirc_paths(Mix.env()),
       build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,
@@ -47,20 +47,20 @@ defmodule ScrivenerHtml.Mixfile do
   # Type `mix help deps` for more examples and options
   defp deps do
     [
-      {:scrivener, "~> 1.2 or ~> 2.0"},
-      {:phoenix_html, "~> 2.2 or ~> 3.0"},
-      {:phoenix, "~> 1.0 and < 1.7.0", optional: true},
-      {:plug, "~> 1.1"},
-      {:ex_doc, "~> 0.19", only: :dev},
-      {:earmark, "~> 1.1", only: :dev}
+      {:scrivener, "~> 2.0"},
+      {:phoenix_html, "~> 3.0"},
+      {:phoenix, "~> 1.5 and < 1.7.0", optional: true},
+      {:plug, "~> 1.5"},
+      {:ex_doc, "~> 0.21", only: :dev},
+      {:earmark, "~> 1.3", only: :dev}
     ]
   end
 
   defp package do
     [
-      maintainers: ["Matt Widmann"],
+      maintainers: ["Gorav Bhootra"],
       licenses: ["MIT"],
-      links: %{github: "https://github.com/mgwidmann/scrivener_html"}
+      links: %{github: "https://github.com/goravbhootra/scrivener_html"}
     ]
   end
 
