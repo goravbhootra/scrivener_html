@@ -33,7 +33,7 @@ like the following:
 config :scrivener_html,
   routes_helper: MyApp.Router.Helpers,
   # If you use a single view style everywhere, you can configure it here. See View Styles below for more info.
-  view_style: :bootstrap
+  view_style: :bootstrap_v5
 ```
 
 Import to your view.
@@ -130,7 +130,7 @@ Set `:link_fun` to any function with arity 2. Defaults to `Phoenix.HTML.link/2`.
 Below are the defaults which are used without passing in any options.
 
 ```elixir
-<%= pagination_links @conn, @page, [], distance: 5, next: ">>", previous: "<<", first: true, last: true, view_style: :bootstrap %>
+<%= pagination_links @conn, @page, [], distance: 5, next: ">>", previous: "<<", first: true, last: true, view_style: :bootstrap_v5 %>
 # Which is the same as
 <%= pagination_links @conn, @page %>
 ```
@@ -164,10 +164,12 @@ _(this example uses materialize icons)_
 
 There are six view styles currently supported:
 
-- `:bootstrap` (the default) This styles the pagination links in a manner that
+- `:bootstrap` This styles the pagination links in a manner that
   is expected by Bootstrap 3.x.
 - `:bootstrap_v4` This styles the pagination links in a manner that
   is expected by Bootstrap 4.x.
+- `:bootstrap_v5` (the default) This styles the pagination links in a manner that
+  is expected by Bootstrap 5.x.
 - `:foundation` This styles the pagination links in a manner that is expected
   by Foundation for Sites 6.x.
 - `:semantic` This styles the pagination links in a manner that is expected by

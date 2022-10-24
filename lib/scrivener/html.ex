@@ -1,7 +1,15 @@
 defmodule Scrivener.HTML do
   use Phoenix.HTML
-  @defaults [view_style: :bootstrap, action: :index, page_param: :page, hide_single: false]
-  @view_styles [:bootstrap, :semantic, :foundation, :bootstrap_v4, :materialize, :bulma]
+  @defaults [view_style: :bootstrap_v5, action: :index, page_param: :page, hide_single: false]
+  @view_styles [
+    :bootstrap,
+    :semantic,
+    :foundation,
+    :bootstrap_v4,
+    :bootstrap_v5,
+    :materialize,
+    :bulma
+  ]
   @raw_defaults [
     distance: 5,
     next: ">>",
@@ -10,6 +18,11 @@ defmodule Scrivener.HTML do
     last: true,
     ellipsis: raw("&hellip;")
   ]
+  @default_hide_single Application.compile_env(:scrivener_html, :hide_single, false)
+  @default_view_style Application.compile_env(:scrivener_html, :view_style, :bootstrap_v5)
+  @default_link_function Application.compile_env(:scrivener_html, :link_fun, &link/2)
+  @default_routes_helper_module Application.compile_env(:scrivener_html, :routes_helper)
+
   @moduledoc """
   For use with Phoenix.HTML, configure the `:routes_helper` module like the following:
 
@@ -69,7 +82,7 @@ defmodule Scrivener.HTML do
       #{inspect @defaults}
 
   The `view_style` indicates which CSS framework you are using. The default is
-  `:bootstrap`, but you can add your own using the `Scrivener.HTML.raw_pagination_links/2` function
+  `:bootstrap_v5`, but you can add your own using the `Scrivener.HTML.raw_pagination_links/2` function
   if desired. The full list of available `view_style`s is here:
 
       #{inspect @view_styles}
@@ -77,7 +90,7 @@ defmodule Scrivener.HTML do
   An example of the output data:
 
       iex> Scrivener.HTML.pagination_links(%Scrivener.Page{total_pages: 10, page_number: 5}) |> Phoenix.HTML.safe_to_string()
-      "<nav><ul class=\"pagination\"><li class=\"\"><a class=\"\" href=\"?page=4\" rel=\"prev\">&lt;&lt;</a></li><li class=\"\"><a class=\"\" href=\"?\" rel=\"canonical\">1</a></li><li class=\"\"><a class=\"\" href=\"?page=2\" rel=\"canonical\">2</a></li><li class=\"\"><a class=\"\" href=\"?page=3\" rel=\"canonical\">3</a></li><li class=\"\"><a class=\"\" href=\"?page=4\" rel=\"prev\">4</a></li><li class=\"active\"><a class=\"\">5</a></li><li class=\"\"><a class=\"\" href=\"?page=6\" rel=\"next\">6</a></li><li class=\"\"><a class=\"\" href=\"?page=7\" rel=\"canonical\">7</a></li><li class=\"\"><a class=\"\" href=\"?page=8\" rel=\"canonical\">8</a></li><li class=\"\"><a class=\"\" href=\"?page=9\" rel=\"canonical\">9</a></li><li class=\"\"><a class=\"\" href=\"?page=10\" rel=\"canonical\">10</a></li><li class=\"\"><a class=\"\" href=\"?page=6\" rel=\"next\">&gt;&gt;</a></li></ul></nav>"
+      "<nav aria-label=\"Page navigation\"><ul class=\"pagination\"><li class=\"page-item\"><a class=\"page-link\" href=\"?page=4\" rel=\"prev\">&lt;&lt;</a></li><li class=\"page-item\"><a class=\"page-link\" href=\"?\" rel=\"canonical\">1</a></li><li class=\"page-item\"><a class=\"page-link\" href=\"?page=2\" rel=\"canonical\">2</a></li><li class=\"page-item\"><a class=\"page-link\" href=\"?page=3\" rel=\"canonical\">3</a></li><li class=\"page-item\"><a class=\"page-link\" href=\"?page=4\" rel=\"prev\">4</a></li><li class=\"active page-item\"><a class=\"page-link\">5</a></li><li class=\"page-item\"><a class=\"page-link\" href=\"?page=6\" rel=\"next\">6</a></li><li class=\"page-item\"><a class=\"page-link\" href=\"?page=7\" rel=\"canonical\">7</a></li><li class=\"page-item\"><a class=\"page-link\" href=\"?page=8\" rel=\"canonical\">8</a></li><li class=\"page-item\"><a class=\"page-link\" href=\"?page=9\" rel=\"canonical\">9</a></li><li class=\"page-item\"><a class=\"page-link\" href=\"?page=10\" rel=\"canonical\">10</a></li><li class=\"page-item\"><a class=\"page-link\" href=\"?page=6\" rel=\"next\">&gt;&gt;</a></li></ul></nav>"
 
   In order to generate links with nested objects (such as a list of comments for a given post)
   it is necessary to pass those arguments. All arguments in the `args` parameter will be directly
@@ -85,7 +98,7 @@ defmodule Scrivener.HTML do
   as `params` to the path helper function. For example, `@post`, which has an index of paginated
   `@comments` would look like the following:
 
-      Scrivener.HTML.pagination_links(@conn, @comments, [@post], view_style: :bootstrap, my_param: "foo")
+      Scrivener.HTML.pagination_links(@conn, @comments, [@post], view_style: :bootstrap_v5, my_param: "foo")
 
   You'll need to be sure to configure `:scrivener_html` with the `:routes_helper`
   module (ex. MyApp.Routes.Helpers) in Phoenix. With that configured, the above would generate calls
@@ -104,15 +117,11 @@ defmodule Scrivener.HTML do
   def pagination_links(conn, paginator, args, opts) do
     opts =
       Keyword.merge(opts,
-        view_style:
-          opts[:view_style] || Application.get_env(:scrivener_html, :view_style, :bootstrap)
+        view_style: opts[:view_style] || @default_view_style
       )
-      |> Keyword.merge(
-        hide_single:
-          opts[:hide_single] || Application.get_env(:scrivener_html, :hide_single, false)
-      )
+      |> Keyword.merge(hide_single: opts[:hide_single] || @default_hide_single)
 
-    link_fun = opts[:link_fun] || Application.get_env(:scrivener_html, :link_fun, &link/2)
+    link_fun = opts[:link_fun] || @default_link_function
 
     merged_opts = Keyword.merge(@defaults, opts)
 
@@ -161,7 +170,7 @@ defmodule Scrivener.HTML do
   if Code.ensure_loaded(Phoenix.Naming) do
     def find_path_fn(entries, path_args) do
       routes_helper_module =
-        Application.get_env(:scrivener_html, :routes_helper) ||
+        @default_routes_helper_module ||
           raise(
             "Scrivener.HTML: Unable to find configured routes_helper module (ex. MyApp.Router.Helper)"
           )
@@ -186,10 +195,8 @@ defmodule Scrivener.HTML do
   end
 
   defp _pagination_links(style, _params, _opts)
-       when not (style in @view_styles) do
-    raise "Scrivener.HTML: View style #{inspect(style)} is not a valid view style. Please use one of #{
-            inspect(@view_styles)
-          }"
+       when style not in @view_styles do
+    raise "Scrivener.HTML: View style #{inspect(style)} is not a valid view style. Please use one of #{inspect(@view_styles)}"
   end
 
   # Bootstrap implementation
@@ -208,6 +215,16 @@ defmodule Scrivener.HTML do
       content_tag :ul, class: "pagination" do
         raw_pagination_links(page_opts.paginator, params)
         |> Enum.map(&page(&1, page_opts, :bootstrap_v4))
+      end
+    end
+  end
+
+  # Bootstrap implementation
+  defp _pagination_links(:bootstrap_v5, params, page_opts) do
+    content_tag :nav, "aria-label": "Page navigation" do
+      content_tag :ul, class: "pagination" do
+        raw_pagination_links(page_opts.paginator, params)
+        |> Enum.map(&page(&1, page_opts, :bootstrap_v5))
       end
     end
   end
@@ -367,6 +384,12 @@ defmodule Scrivener.HTML do
     if(paginator.page_number == page_number, do: ["active", "page-item"], else: ["page-item"])
   end
 
+  defp li_classes_for_style(_paginator, :ellipsis, :bootstrap_v5), do: ["page-item"]
+
+  defp li_classes_for_style(paginator, page_number, :bootstrap_v5) do
+    if(paginator.page_number == page_number, do: ["active", "page-item"], else: ["page-item"])
+  end
+
   defp li_classes_for_style(_paginator, :ellipsis, :foundation), do: ["ellipsis"]
 
   defp li_classes_for_style(paginator, page_number, :foundation) do
@@ -393,6 +416,7 @@ defmodule Scrivener.HTML do
   defp link_classes_for_style(_paginator, :ellipsis, :bulma), do: ["pagination-ellipsis"]
   defp link_classes_for_style(_paginator, _page_number, :bootstrap), do: []
   defp link_classes_for_style(_paginator, _page_number, :bootstrap_v4), do: ["page-link"]
+  defp link_classes_for_style(_paginator, _page_number, :bootstrap_v5), do: ["page-link"]
   defp link_classes_for_style(_paginator, _page_number, :foundation), do: []
 
   defp link_classes_for_style(paginator, page_number, :semantic) do
